@@ -302,6 +302,8 @@ public class HorizontalBarChartRenderer: BarChartRenderer
                 // if only single values are drawn (sum)
                 if (!dataSet.isStacked)
                 {
+                    var minimum_value = 10000.0
+                    
                     for j in 0 ..< Int(ceil(CGFloat(dataSet.entryCount) * animator.phaseX))
                     {
                         guard let e = dataSet.entryForIndex(j) as? BarChartDataEntry else { continue }
@@ -325,6 +327,7 @@ public class HorizontalBarChartRenderer: BarChartRenderer
                         
                         let val = e.value
                         let valueText = formatter.stringFromNumber(val)!
+                        minimum_value = min(minimum_value, val)
                         
                         // calculate the correct offset depending on the draw position of the value
                         let valueTextWidth = valueText.sizeWithAttributes([NSFontAttributeName: valueFont]).width
@@ -345,7 +348,40 @@ public class HorizontalBarChartRenderer: BarChartRenderer
                             font: valueFont,
                             align: textAlign,
                             color: dataSet.valueTextColorAt(j))
+                        
+
                     }
+                    
+                    var number_of_minimum_value = 0
+
+                    for j in 0 ..< Int(ceil(CGFloat(dataSet.entryCount) * animator.phaseX))
+                    {
+                        guard let e = dataSet.entryForIndex(j) as? BarChartDataEntry else { continue }
+                        let val = e.value
+                        
+                        if val == minimum_value
+                        {
+                            number_of_minimum_value = number_of_minimum_value + 1
+                        }
+                    }
+                    
+                    if number_of_minimum_value < 3
+                    {
+                        for j in 0 ..< Int(ceil(CGFloat(dataSet.entryCount) * animator.phaseX))
+                        {
+                            guard let e = dataSet.entryForIndex(j) as? BarChartDataEntry else { continue }
+                            
+                            let valuePoint = trans.getTransformedValueHorizontalBarChart(entry: e, xIndex: e.xIndex, dataSetIndex: dataSetIndex, phaseY: phaseY, dataSetCount: dataSetCount, groupSpace: groupSpace)
+                            
+                            let val = e.value
+                            
+                            if val == minimum_value
+                            {
+                                let image = UIImage(named: "left marker")
+                                image?.drawInRect(CGRect(x: valuePoint.x + 20, y: -14 + valuePoint.y, width: 40, height: 28))
+                            }
+                        }
+                    }                    
                 }
                 else
                 {
